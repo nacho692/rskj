@@ -35,7 +35,7 @@ public interface BlockchainConfig {
     boolean difficultyDropEnabled();
 
     boolean isRskip90();
-    
+
     boolean isRskip85();
 
     boolean isRskip89();
@@ -63,4 +63,6 @@ public interface BlockchainConfig {
     boolean isRskip120();
 
     boolean isRskip123();
+
+    boolean isRskipGetBtcTransactionConfirmations();//TODO set the correct name for the RskIp
 }
