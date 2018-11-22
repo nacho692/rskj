@@ -27,6 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class MerkleBranchTest {
+    @Test
+    public void moreHashesThanUint8() {
+        try {
+            new MerkleBranch(
+                    Collections.nCopies(256, Sha256Hash.of(Hex.decode("aa")))
+                    , 0b111);
+            Assert.fail();
+        } catch (InvalidMerkleBranchException e) {
+            Assert.assertTrue(e.getMessage().contains("number of hashes"));
+        }
+    }
+
     @Test
     public void moreSignificantBitsThanHashes() {
         try {
@@ -76,6 +89,7 @@ public class MerkleBranchTest {
 
     @Test
     public void twoHashesBranch() {
+
         assertBranchCorrectlyProves(
                 Arrays.asList(
                         Hex.decode("bfc0770be0c8bc9d06714b00c89cc769286968c28632aa7768f9525a0287d5e6"),

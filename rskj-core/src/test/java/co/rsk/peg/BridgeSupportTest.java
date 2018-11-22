@@ -3580,8 +3580,7 @@ public class BridgeSupportTest {
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 132;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), 132);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         PowerMockito.mockStatic(BridgeUtils.class);
@@ -3589,20 +3588,17 @@ public class BridgeSupportTest {
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-        PowerMockito.when(btcBlockChain.getBestChainHeight()).thenReturn(chainHeadHeight);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         MerkleBranch merkleBranch = mock(MerkleBranch.class);
         when(merkleBranch.proves(btcTransactionHash, blockHeader)).thenReturn(true);
 
         int confirmations = bridgeSupport.getBtcTransactionConfirmations(btcTransactionHash, blockHash, merkleBranch);
 
-        Assert.assertEquals(83, confirmations);
+        Assert.assertEquals(132 - 50 + 1, confirmations);
     }
 
     @Test
@@ -3613,7 +3609,6 @@ public class BridgeSupportTest {
         Repository track = repository.startTracking();
 
         Sha256Hash blockHash = Sha256Hash.of(Hex.decode("aabbcc"));
-
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(null);
 
@@ -3651,8 +3646,7 @@ public class BridgeSupportTest {
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 132;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), 132);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         PowerMockito.mockStatic(BridgeUtils.class);
@@ -3660,12 +3654,10 @@ public class BridgeSupportTest {
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         int confirmations = bridgeSupport.getBtcTransactionConfirmations(btcTransactionHash, blockHash, null);
 
@@ -3689,8 +3681,7 @@ public class BridgeSupportTest {
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 132;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), 132);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         PowerMockito.mockStatic(BridgeUtils.class);
@@ -3698,12 +3689,10 @@ public class BridgeSupportTest {
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         int confirmations = bridgeSupport.getBtcTransactionConfirmations(btcTransactionHash, blockHash, null);
 
@@ -3712,6 +3701,7 @@ public class BridgeSupportTest {
 
     @Test
     public void getBtcTransactionConfirmations_blockTooOld() throws BlockStoreException, IOException {
+
         config.setBlockchainConfig(new RegTestOrchidConfig());
 
         Repository repository = createRepositoryImpl(config);
@@ -3722,23 +3712,21 @@ public class BridgeSupportTest {
         BtcBlock blockHeader = mock(BtcBlock.class);
         when(blockHeader.getHash()).thenReturn(blockHash);
 
-        StoredBlock block = new StoredBlock(blockHeader, new BigInteger("0"), 50);
+        final int BLOCK_HEIGHT = 50;
+        StoredBlock block = new StoredBlock(blockHeader, new BigInteger("0"), BLOCK_HEIGHT);
 
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 100_000;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), BLOCK_HEIGHT + 4320 + 1);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         int confirmations = bridgeSupport.getBtcTransactionConfirmations(btcTransactionHash, blockHash, null);
 
@@ -3747,6 +3735,7 @@ public class BridgeSupportTest {
 
     @Test
     public void getBtcTransactionConfirmations_heightInconsistency() throws BlockStoreException, IOException {
+
         config.setBlockchainConfig(new RegTestOrchidConfig());
 
         Repository repository = createRepositoryImpl(config);
@@ -3762,8 +3751,7 @@ public class BridgeSupportTest {
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 132;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), 132);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         PowerMockito.mockStatic(BridgeUtils.class);
@@ -3771,12 +3759,10 @@ public class BridgeSupportTest {
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         int confirmations = bridgeSupport.getBtcTransactionConfirmations(btcTransactionHash, blockHash, null);
 
@@ -3802,8 +3788,7 @@ public class BridgeSupportTest {
         BtcBlockstoreWithCache btcBlockStore = mock(RepositoryBlockStore.class);
         when(btcBlockStore.getFromCache(blockHash)).thenReturn(block);
 
-        int chainHeadHeight = 132;
-        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), chainHeadHeight);
+        StoredBlock chainHead = new StoredBlock(blockHeader, new BigInteger("0"), 132);
         when(btcBlockStore.getChainHead()).thenReturn(chainHead);
 
         PowerMockito.mockStatic(BridgeUtils.class);
@@ -3811,13 +3796,10 @@ public class BridgeSupportTest {
 
         Sha256Hash btcTransactionHash = Sha256Hash.of(Hex.decode("112233"));
 
-        BtcBlockChain btcBlockChain = PowerMockito.mock(BtcBlockChain.class);
-        PowerMockito.when(btcBlockChain.getBestChainHeight()).thenReturn(chainHeadHeight);
-
         BridgeStorageProvider provider = new BridgeStorageProvider(track, PrecompiledContracts.BRIDGE_ADDR,
                 config.getBlockchainConfig().getCommonConstants().getBridgeConstants(), bridgeStorageConfigurationAtHeightZero);
         BridgeSupport bridgeSupport = new BridgeSupport(config, track, mock(BridgeEventLogger.class),
-                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, btcBlockChain, null);
+                BridgeRegTestConstants.getInstance(), provider, btcBlockStore, mock(BtcBlockChain.class), null);
 
         MerkleBranch merkleBranch = mock(MerkleBranch.class);
         when(merkleBranch.proves(btcTransactionHash, blockHeader)).thenReturn(false);
