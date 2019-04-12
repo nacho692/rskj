@@ -286,6 +286,7 @@ public class Bridge extends PrecompiledContracts.PrecompiledContract {
         this.repository = repository;
         this.logs = logs;
         this.blockchainConfig = blockchainNetConfig.getConfigForBlock(rskExecutionBlock.getNumber());
+        this.bridgeSupport = setup();
     }
 
     @Override
@@ -317,8 +318,6 @@ public class Bridge extends PrecompiledContracts.PrecompiledContract {
                 logger.info(errorMessage);
                 throw new BridgeIllegalArgumentException(errorMessage);
             }
-
-            this.bridgeSupport = setup();
 
             Optional<?> result;
             try {
@@ -374,19 +373,6 @@ public class Bridge extends PrecompiledContracts.PrecompiledContract {
             logger.warn("Exception onBlock", e);
             throw new RuntimeException("Exception onBlock", e);
         }
-    }
-
-    public long receiveHeadersGetCost(Object[] args) {
-        // Old, private method fixed cost. Only applies before the corresponding RSKIP
-        if (!blockchainConfig.isRskipPublicReceiveHeaders()) {
-            return 22000L;
-        }
-
-        // Dynamic cost based on the number of headers
-        // TODO: define and implement this. At the moment the cost is set to a higher fixed value
-        // TODO: plus the number of headers actually received times 100
-        final int numberOfHeaders = ((Object[]) args[0]).length;
-        return 100_000L + numberOfHeaders * 100;
     }
 
     public void receiveHeaders(Object[] args)
@@ -578,6 +564,12 @@ public class Bridge extends PrecompiledContracts.PrecompiledContract {
         }
 
         return blockHash.getBytes();
+    }
+
+    public long getBtcTransactionConfirmationsGetCost(Object[] args) {
+        Sha256Hash btcBlockHash = Sha256Hash.wrap((byte[]) args[1]);
+
+        return bridgeSupport.getBtcTransactionConfirmationsGetCost(btcBlockHash);
     }
 
     public int getBtcTransactionConfirmations(Object[] args)
