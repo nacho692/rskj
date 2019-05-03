@@ -2242,8 +2242,9 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsBeforeSecondFork() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskipGetBtcTransactionConfirmations()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
+
 
         Transaction txMock = mock(Transaction.class);
         Bridge bridge = PowerMockito.spy(new Bridge(PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, blockchainConfig));
@@ -2259,7 +2260,7 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsAfterSecondFork_ok() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskipGetBtcTransactionConfirmations()).thenReturn(true);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(true);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
@@ -2319,7 +2320,7 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsAfterSecondFork_errorInBridgeSupport() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskipGetBtcTransactionConfirmations()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
@@ -2385,7 +2386,7 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsAfterSecondFork_merkleBranchConstructionError() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskipGetBtcTransactionConfirmations()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
@@ -2439,7 +2440,7 @@ public class BridgeTest {
 
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskipGetBtcTransactionConfirmations()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
