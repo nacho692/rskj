@@ -126,6 +126,25 @@ public abstract class BridgePerformanceTestCase extends PrecompiledContractPerfo
         void initialize(BridgeStorageProvider provider, Repository repository, int executionIndex);
     }
 
+    protected interface PostInitCallback {
+        void afterInit(EnvironmentBuilder.Environment environment);
+    }
+
+    protected ExecutionStats executeAndAverage(
+            String name,
+            int times,
+            ABIEncoder abiEncoder,
+            BridgeStorageProviderInitializer storageInitializer,
+            TxBuilder txBuilder,
+            HeightProvider heightProvider,
+            ExecutionStats stats) {
+
+        return executeAndAverage(
+                name, times, abiEncoder, storageInitializer,
+                txBuilder, heightProvider, stats, null
+        );
+    }
+
     protected ExecutionStats executeAndAverage(
             String name,
             int times,
@@ -135,6 +154,23 @@ public abstract class BridgePerformanceTestCase extends PrecompiledContractPerfo
             HeightProvider heightProvider,
             ExecutionStats stats,
             ResultCallback resultCallback) {
+
+        return executeAndAverage(
+                name, times, abiEncoder, storageInitializer,
+                txBuilder, heightProvider, stats, resultCallback, null
+        );
+    }
+
+    protected ExecutionStats executeAndAverage(
+            String name,
+            int times,
+            ABIEncoder abiEncoder,
+            BridgeStorageProviderInitializer storageInitializer,
+            TxBuilder txBuilder,
+            HeightProvider heightProvider,
+            ExecutionStats stats,
+            ResultCallback resultCallback,
+            PostInitCallback postInitCallback) {
 
         EnvironmentBuilder environmentBuilder = new EnvironmentBuilder() {
             private Bridge bridge;
@@ -186,10 +222,15 @@ public abstract class BridgePerformanceTestCase extends PrecompiledContractPerfo
                 tx.setLocalCallTransaction(oldLocalCall);
                 benchmarkerTrack.getStatistics().clear();
 
-                return new Environment(
+                Environment environment =  new Environment(
                         bridge,
                         benchmarkerTrack
                 );
+
+                if (postInitCallback != null) {
+                    postInitCallback.afterInit(environment);
+                }
+                return environment;
             }
 
             @Override
