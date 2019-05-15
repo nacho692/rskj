@@ -2130,12 +2130,13 @@ public class BridgeTest {
         when(tx.isLocalCallTransaction()).thenReturn(true);
 
         Bridge spiedBridge = PowerMockito.spy(new Bridge(PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, blockchainConfig));
-        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
 
         BridgeSupport bridgeSupportMock = mock(BridgeSupport.class);
-        PowerMockito.doReturn(bridgeSupportMock).when(spiedBridge, "setup");
         Address address = new BtcECKey().toAddress(networkParameters);
         when(bridgeSupportMock.getFederationAddress()).thenReturn(address);
+        PowerMockito.doReturn(bridgeSupportMock).when(spiedBridge, "setup");
+
+        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
 
         byte[] data = BridgeMethods.GET_FEDERATION_ADDRESS.getFunction().encode(new Object[]{});
         spiedBridge.execute(data);
@@ -2155,11 +2156,13 @@ public class BridgeTest {
         when(tx.isLocalCallTransaction()).thenReturn(false);
 
         Bridge spiedBridge = PowerMockito.spy(new Bridge(PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, blockchainConfig));
-        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
 
         BridgeSupport bridgeSupportMock = mock(BridgeSupport.class);
         when(bridgeSupportMock.getFederationAddress()).thenReturn(new BtcECKey().toAddress(networkParameters));
         PowerMockito.doReturn(bridgeSupportMock).when(spiedBridge, "setup");
+
+        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
+
 
         byte[] data = BridgeMethods.GET_FEDERATION_ADDRESS.getFunction().encode(new Object[]{});
         spiedBridge.execute(data);
@@ -2206,11 +2209,12 @@ public class BridgeTest {
         when(tx.isLocalCallTransaction()).thenReturn(localCall);
 
         Bridge spiedBridge = PowerMockito.spy(new Bridge(PrecompiledContracts.BRIDGE_ADDR, bridgeConstants, blockchainConfig));
-        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
 
         BridgeSupport bridgeSupportMock = mock(BridgeSupport.class);
         PowerMockito.doReturn(bridgeSupportMock).when(spiedBridge, "setup");
         when(bridgeSupportMock.voteFeePerKbChange(tx, Coin.CENT)).thenReturn(1);
+
+        spiedBridge.init(tx, getGenesisBlock(), null, null, null, null);
 
         byte[] data = BridgeMethods.VOTE_FEE_PER_KB.getFunction().encode(new Object[]{ Coin.CENT.longValue() });
         spiedBridge.execute(data);
@@ -2320,7 +2324,7 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsAfterSecondFork_errorInBridgeSupport() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(true);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
@@ -2386,7 +2390,7 @@ public class BridgeTest {
     public void getBtcTransactionConfirmationsAfterSecondFork_merkleBranchConstructionError() throws Exception {
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(true);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
@@ -2440,7 +2444,7 @@ public class BridgeTest {
 
         BlockchainNetConfig blockchainConfig = spy(BridgeTest.blockchainConfig);
         BlockchainConfig blockchainConfigForBlock = mock(BlockchainConfig.class);
-        when(blockchainConfigForBlock.isRskip122()).thenReturn(false);
+        when(blockchainConfigForBlock.isRskip122()).thenReturn(true);
         when(blockchainConfig.getConfigForBlock(anyLong())).thenReturn(blockchainConfigForBlock);
 
         Transaction txMock = mock(Transaction.class);
