@@ -72,6 +72,7 @@ public abstract class PrecompiledContractPerformanceTestCase {
         private long startTime, endTime;
         private long startRealTime, endRealTime;
         private RepositoryTrackWithBenchmarking.Statistics repositoryStatistics;
+        private long gasForData;
 
         public ExecutionTracker(ThreadMXBean thread) {
             this.thread = thread;
@@ -103,6 +104,10 @@ public abstract class PrecompiledContractPerformanceTestCase {
         public long getRealExecutionTime() {
             return endRealTime - startRealTime;
         }
+
+        public void setGetGasForData(long gasForData) { this.gasForData = gasForData; }
+
+        public long getGetGasForData() { return this.gasForData; }
     }
 
     @BeforeClass
@@ -241,7 +246,7 @@ public abstract class PrecompiledContractPerformanceTestCase {
         executionInfo.startTimer();
         byte[] executionResult = environment.contract.execute(abiEncoder.encode(executionIndex));
         executionInfo.endTimer();
-
+        executionInfo.setGetGasForData(environment.contract.getGasForData(abiEncoder.encode(executionIndex)));
         if (resultCallback != null) {
             resultCallback.callback(executionResult);
         }
@@ -272,6 +277,7 @@ public abstract class PrecompiledContractPerformanceTestCase {
             stats.realExecutionTimes.add(tracker.getRealExecutionTime());
             stats.slotsWritten.add(tracker.getRepositoryStatistics().getSlotsWritten());
             stats.slotsCleared.add(tracker.getRepositoryStatistics().getSlotsCleared());
+            stats.gasForData.add(tracker.getGetGasForData());
         }
 
         return stats;

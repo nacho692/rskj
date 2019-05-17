@@ -46,13 +46,13 @@ public class IdentityPerformanceTestCase extends PrecompiledContractPerformanceT
             }
         };
 
-        doIdentity(environmentBuilder, stats, 2000);
+        doIdentity(environmentBuilder, stats, 2000, new byte[]{});
 
         IdentityPerformanceTest.addStats(stats);
     }
 
-    private void doIdentity(EnvironmentBuilder environmentBuilder, ExecutionStats stats, int numCases) throws IOException {
-        ABIEncoder abiEncoder = (int executionIndex) -> new byte[]{};
+    private void doIdentity(EnvironmentBuilder environmentBuilder, ExecutionStats stats, int numCases, byte[] data) throws IOException {
+        ABIEncoder abiEncoder = (int executionIndex) -> data;
 
         executeAndAverage(
                 "identity",
