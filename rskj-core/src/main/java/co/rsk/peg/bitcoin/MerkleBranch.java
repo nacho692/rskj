@@ -23,8 +23,8 @@ import java.util.List;
  * @author Ariel Mendelzon
  */
 public class MerkleBranch {
-    private List<Sha256Hash> hashes;
-    private int path;
+    private final List<Sha256Hash> hashes;
+    private final int path;
 
     public MerkleBranch(List<Sha256Hash> hashes, int path) {
         this.hashes = Collections.unmodifiableList(hashes);
@@ -34,7 +34,6 @@ public class MerkleBranch {
         if (hashes.size() > 255) {
             throw new InvalidMerkleBranchException("The number of hashes can't be bigger than 255");
         }
-
         // We validate here that there are no more bits in the
         // path than those needed to reduce the branch to the
         // merkle root. That is, that the number of significant
