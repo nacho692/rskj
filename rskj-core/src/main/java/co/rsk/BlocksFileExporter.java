@@ -58,6 +58,7 @@ public class BlocksFileExporter {
     }
 
     public static void main(String[] args) throws IOException {
+        args = new String[]{"base-path","/home/julian/.rsk/unitrie","fileExporter"};
         if (args.length == 0) {
             System.out.println("usage: FileBlockExporter [<node cli args>] <target file>");
             System.exit(0);

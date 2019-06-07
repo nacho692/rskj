@@ -70,11 +70,15 @@ public class BlocksFilePlayer {
     }
 
     public static void main(String[] args) throws IOException {
+
+        args = new String[]{"base-path","/home/julian/.rsk/database","/home/julian/workspace/rskj-projects/rskj-compression/fileExporter"};
+
         if (args.length == 0) {
             System.out.println("usage: FileBlockPlayer [<node cli args>] <source file>");
             System.exit(0);
             return;
         }
+
 
         String[] nodeCliArgs = Arrays.copyOf(args, args.length - 1);
         RskContext objects = new RskContext(nodeCliArgs);
