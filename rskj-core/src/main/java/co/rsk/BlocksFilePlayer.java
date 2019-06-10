@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Stream;
 
 public class BlocksFilePlayer {
@@ -45,7 +46,16 @@ public class BlocksFilePlayer {
     private void connectBlocks() throws IOException {
         try (Stream<String> lines = Files.lines(Paths.get(filename))) {
             long blocksToSkip = targetBlockchain.getBestBlock().getNumber();
-            lines.skip(blocksToSkip).map(this::readBlock).forEach(this::connectBlock);
+            Stream<Block> blockStream = lines.skip(blocksToSkip).map(this::readBlock);
+
+            int count = 0;
+            int max = 5000;
+
+            Iterator<Block> blockIterator = blockStream.iterator();
+            while (count < max && blockIterator.hasNext()){
+                this.connectBlock(blockIterator.next());
+                count++;
+            }
 
             System.out.printf("Best block is now %7d%n", targetBlockchain.getBestBlock().getNumber());
         }
@@ -71,7 +81,7 @@ public class BlocksFilePlayer {
 
     public static void main(String[] args) throws IOException {
 
-        args = new String[]{"base-path","/home/julian/.rsk/database","/home/julian/workspace/rskj-projects/rskj-compression/fileExporter"};
+        args = new String[]{"-base-path","/home/julian/.rsk/database-snappy","/home/julian/workspace/rskj-projects/rskj-compression/fileExporter"};
 
         if (args.length == 0) {
             System.out.println("usage: FileBlockPlayer [<node cli args>] <source file>");
