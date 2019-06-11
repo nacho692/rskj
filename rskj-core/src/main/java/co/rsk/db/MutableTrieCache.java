@@ -24,6 +24,7 @@ import co.rsk.trie.MutableTrie;
 import co.rsk.trie.Trie;
 import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.db.TrieKeyMapper;
+import org.ethereum.vm.DataWord;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -34,19 +35,14 @@ public class MutableTrieCache implements MutableTrie {
     private MutableTrie trie;
     // We use a single cache to mark both changed elements and removed elements.
     // null value means the element has been removed.
-    private final Map<ByteArrayWrapper, CacheItem> cache;
+    private final Map<ByteArrayWrapper, Map<ByteArrayWrapper, byte[]>> cache;
 
-    private final List<LogItem> logOps;
-
-    private final Map<ByteArrayWrapper, Integer> deleteRecursiveCache;
-
-    private int currentOrder = 0;
+    private final Set<ByteArrayWrapper> deleteRecursiveCache;
 
     public MutableTrieCache(MutableTrie parentTrie) {
         trie = parentTrie;
         cache = new HashMap<>();
-        logOps = new ArrayList<>();
-        deleteRecursiveCache = new HashMap<>();
+        deleteRecursiveCache = new HashSet<>();
     }
 
     @Override
@@ -69,21 +65,53 @@ public class MutableTrieCache implements MutableTrie {
             byte[] key,
             Function<byte[], T> trieRetriever,
             Function<byte[], T> cacheTransformer) {
-        ByteArrayWrapper wrap = new ByteArrayWrapper(key);
-        CacheItem cacheItem = cache.get(wrap);
-        int size = TrieKeyMapper.domainPrefix().length + TrieKeyMapper.ACCOUNT_KEY_SIZE + TrieKeyMapper.SECURE_KEY_SIZE;
-        ByteArrayWrapper deleteWrap = key.length == size ? wrap : new ByteArrayWrapper(Arrays.copyOf(key, size));
+        ByteArrayWrapper wrapper = new ByteArrayWrapper(key);
+        ByteArrayWrapper accountWrapper = getAccountWrapper(wrapper);
+        byte[] cacheItem = cache.getOrDefault(accountWrapper, Collections.emptyMap()).get(wrapper);
 
-        if (cacheItem != null) {
-            Integer order = deleteRecursiveCache.get(deleteWrap);
-            return order != null && order >= cacheItem.order ?
-                    Optional.empty() :
-                    Optional.ofNullable(cacheTransformer.apply(cacheItem.value));
+        if (deleteRecursiveCache.contains(accountWrapper)){
+            return Optional.empty();
         }
 
-        return deleteRecursiveCache.containsKey(deleteWrap) ?
-                Optional.empty() :
+        return cacheItem != null ?
+                Optional.ofNullable(cacheTransformer.apply(cacheItem)) :
                 Optional.ofNullable(trieRetriever.apply(key));
+    }
+
+    public Iterator<DataWord> getStorageKeys(byte[] accountStorageKey) {
+        ByteArrayWrapper accountWrapper = new ByteArrayWrapper(accountStorageKey);
+        if (deleteRecursiveCache.contains(accountWrapper)) {
+            return new ArrayList<DataWord>().iterator();
+        }
+
+        Iterator<DataWord> storageKeys = trie.getStorageKeys(accountStorageKey);
+        Map<ByteArrayWrapper, byte[]> accountItems = new HashMap<>(cache.getOrDefault(accountWrapper, Collections.emptyMap()));
+        if (accountItems.isEmpty()) {
+            return storageKeys;
+        }
+
+        List<DataWord> keys = new ArrayList<>();
+        while (storageKeys.hasNext()) {
+            keys.add(storageKeys.next());
+        }
+
+        accountItems.forEach((key, value) -> {
+            if (value != null) {
+                keys.add(DataWord.valueOf(key.getData()));
+            } else {
+                keys.remove(DataWord.valueOf(key.getData()));
+            }
+        });
+
+        return keys.iterator();
+    }
+
+    // This method returns a wrapper with the same content and size expected for a account key
+    // when the key is from the same size than the original wrapper, it returns the same object
+    private ByteArrayWrapper getAccountWrapper(ByteArrayWrapper originalWrapper) {
+        byte[] key = originalWrapper.getData();
+        int size = TrieKeyMapper.domainPrefix().length + TrieKeyMapper.ACCOUNT_KEY_SIZE + TrieKeyMapper.SECURE_KEY_SIZE;
+        return key.length == size ? originalWrapper : new ByteArrayWrapper(Arrays.copyOf(key, size));
     }
 
     @Override
@@ -93,12 +121,13 @@ public class MutableTrieCache implements MutableTrie {
 
     // This method optimizes cache-to-cache transfers
     @Override
-    public void put(ByteArrayWrapper wrap, byte[] value) {
+    public void put(ByteArrayWrapper wrapper, byte[] value) {
         // If value==null, do we have the choice to either store it
         // in cache with null or in deleteCache. Here we have the choice to
         // to add it to cache with null value or to deleteCache.
-        cache.put(wrap, new CacheItem(value, ++currentOrder));
-        logOps.add(new LogItem(wrap, LogOp.PUT));
+        ByteArrayWrapper accountWrapper = getAccountWrapper(wrapper);
+        Map<ByteArrayWrapper, byte[]> accountMap = cache.computeIfAbsent(accountWrapper, k -> new HashMap<>());
+        accountMap.put(wrapper, value);
     }
 
     @Override
@@ -114,8 +143,6 @@ public class MutableTrieCache implements MutableTrie {
     ////////////////////////////////////////////////////////////////////////////////////
     @Override
     public void deleteRecursive(byte[] key) {
-        ByteArrayWrapper wrap = new ByteArrayWrapper(key);
-
         // Can there be wrongly unhandled interactions interactions between put() and deleteRecurse()
         // In theory, yes. In practice, never.
         // Suppose that a contract X calls a contract S.
@@ -127,29 +154,24 @@ public class MutableTrieCache implements MutableTrie {
         // with SSTORE. This will be stored in the cache as a put(). The cache later receives a
         // deleteRecursive, BUT NEVER IN THE OTHER order.
         // See TransactionExecutor.finalization(), when it iterates the list with getDeleteAccounts().forEach()
-        deleteRecursiveCache.put(wrap, ++currentOrder);
-        logOps.add(new LogItem(wrap, LogOp.DELETE));
+        ByteArrayWrapper wrap = new ByteArrayWrapper(key);
+        deleteRecursiveCache.add(wrap);
     }
 
     @Override
     public void commit() {
         // all cached items must be transferred to parent
         // some items will represent deletions (null values)
-        if (deleteRecursiveCache.isEmpty()) {
-            cache.forEach((key, value) -> this.trie.put(key.getData(), value.value));
-        } else {
-            logOps.forEach(log -> {
-                if (log.logOp == LogOp.PUT) {
-                    this.trie.put(log.key.getData(), cache.get(log.key).value);
-                } else {
-                    this.trie.deleteRecursive(log.key.getData());
-                }
-            });
-        }
+        cache.forEach((accountKey, accountData) -> {
+            if (deleteRecursiveCache.contains(accountKey)) {
+                this.trie.deleteRecursive(accountKey.getData());
+            } else {
+                accountData.forEach((realKey, value) -> this.trie.put(realKey, value));
+            }
+        });
 
         deleteRecursiveCache.clear();
         cache.clear();
-        logOps.clear();
     }
 
     @Override
@@ -167,7 +189,6 @@ public class MutableTrieCache implements MutableTrie {
     public void rollback() {
         cache.clear();
         deleteRecursiveCache.clear();
-        logOps.clear();
     }
 
     @Override
@@ -175,16 +196,16 @@ public class MutableTrieCache implements MutableTrie {
         Set<ByteArrayWrapper> parentSet = trie.collectKeys(size);
 
         // all cached items to be transferred to parent
-        for (ByteArrayWrapper item : cache.keySet()) {
-            if (size == Integer.MAX_VALUE || item.getData().length == size) {
-                if (this.get(item.getData()) == null) {
-                    parentSet.remove(item);
-                } else {
-                    parentSet.add(item);
-                }
-            }
-        }
-
+        cache.forEach((accountKey, account) ->
+              account.forEach((realKey, value) -> {
+                  if (size == Integer.MAX_VALUE || realKey.getData().length == size) {
+                      if (this.get(realKey.getData()) == null) {
+                          parentSet.remove(realKey);
+                      } else {
+                          parentSet.add(realKey);
+                      }
+                  }
+              }));
         return parentSet;
     }
 
@@ -214,27 +235,4 @@ public class MutableTrieCache implements MutableTrie {
         return internalGet(key, trie::getValueLength, cachedBytes -> new Uint24(cachedBytes.length)).orElse(Uint24.ZERO);
     }
 
-    private static class CacheItem {
-        public final byte[] value;
-        public final int order;
-
-        public CacheItem(byte[] value, int order) {
-            this.value = value;
-            this.order = order;
-        }
-    }
-
-    private static class LogItem {
-        public final ByteArrayWrapper key;
-        public final LogOp logOp;
-
-        public LogItem(ByteArrayWrapper key, LogOp logOp) {
-            this.key = key;
-            this.logOp = logOp;
-        }
-    }
-
-    private enum LogOp {
-        PUT, DELETE
-    }
 }

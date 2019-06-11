@@ -23,6 +23,7 @@ import co.rsk.config.VmConfig;
 import co.rsk.core.RskAddress;
 import co.rsk.core.bc.AccountInformationProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.ethereum.db.ByteArrayWrapper;
 import org.ethereum.vm.DataWord;
 import org.ethereum.vm.OpCode;
 import org.ethereum.vm.program.Memory;

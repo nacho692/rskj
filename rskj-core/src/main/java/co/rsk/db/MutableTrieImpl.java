@@ -22,8 +22,14 @@ import co.rsk.core.types.ints.Uint24;
 import co.rsk.crypto.Keccak256;
 import co.rsk.trie.MutableTrie;
 import co.rsk.trie.Trie;
+import co.rsk.trie.TrieKeySlice;
 import org.ethereum.db.ByteArrayWrapper;
+import org.ethereum.db.TrieKeyMapper;
+import org.ethereum.vm.DataWord;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class MutableTrieImpl implements MutableTrie {
@@ -76,6 +82,19 @@ public class MutableTrieImpl implements MutableTrie {
     }
 
     @Override
+    public Iterator<DataWord> getStorageKeys(byte[] accountStorageKey) {
+        final int storageKeyOffset = (TrieKeyMapper.storagePrefix().length + TrieKeyMapper.SECURE_KEY_SIZE) * Byte.SIZE - 1;
+        Trie storageTrie = trie.find(accountStorageKey);
+
+        if (storageTrie != null) {
+            Iterator<Trie.IterationElement> storageIterator = storageTrie.getPreOrderIterator();
+            storageIterator.next(); // skip storage root
+            return new StorageKeysIterator(storageIterator, storageKeyOffset);
+        }
+        return Collections.emptyIterator();
+    }
+
+    @Override
     public void deleteRecursive(byte[] key) {
         trie = trie.deleteRecursive(key);
     }
@@ -115,5 +134,46 @@ public class MutableTrieImpl implements MutableTrie {
     @Override
     public boolean hasStore() {
         return trie.hasStore();
+    }
+
+    private static class StorageKeysIterator implements Iterator<DataWord> {
+        private final Iterator<Trie.IterationElement> storageIterator;
+        private final int storageKeyOffset;
+        private DataWord currentStorageKey;
+
+        StorageKeysIterator(Iterator<Trie.IterationElement> storageIterator, int storageKeyOffset) {
+            this.storageIterator = storageIterator;
+            this.storageKeyOffset = storageKeyOffset;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (currentStorageKey != null) {
+                return true;
+            }
+            while (storageIterator.hasNext()) {
+                Trie.IterationElement iterationElement = storageIterator.next();
+                if (iterationElement.getNode().getValue() != null) {
+                    TrieKeySlice nodeKey = iterationElement.getNodeKey();
+                    byte[] storageExpandedKeySuffix = nodeKey.slice(storageKeyOffset, nodeKey.length()).encode();
+                    currentStorageKey = DataWord.valueOf(storageExpandedKeySuffix);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public DataWord next() {
+            if (currentStorageKey == null) {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            DataWord next = currentStorageKey;
+            currentStorageKey = null;
+            return next;
+        }
     }
 }

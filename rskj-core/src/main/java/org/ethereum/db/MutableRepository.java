@@ -225,48 +225,8 @@ public class MutableRepository implements Repository {
     @Override
     public Iterator<DataWord> getStorageKeys(RskAddress addr) {
         // -1 b/c the first bit is implicit in the storage node
-        final int storageKeyOffset = (TrieKeyMapper.storagePrefix().length + TrieKeyMapper.SECURE_KEY_SIZE) * Byte.SIZE - 1;
         byte[] accountStorageKey = trieKeyMapper.getAccountStoragePrefixKey(addr);
-        Trie storageTrie = mutableTrie.getTrie().find(accountStorageKey);
-
-        if (storageTrie != null) {
-            Iterator<Trie.IterationElement> storageIterator = storageTrie.getPreOrderIterator();
-            storageIterator.next(); // skip storage root
-            return new Iterator<DataWord>() {
-                private DataWord currentStorageKey;
-
-                @Override
-                public boolean hasNext() {
-                    if (currentStorageKey != null) {
-                        return true;
-                    }
-                    while (storageIterator.hasNext()) {
-                        Trie.IterationElement iterationElement = storageIterator.next();
-                        if (iterationElement.getNode().getValue() != null) {
-                            TrieKeySlice nodeKey = iterationElement.getNodeKey();
-                            byte[] storageExpandedKeySuffix = nodeKey.slice(storageKeyOffset, nodeKey.length()).encode();
-                            currentStorageKey = DataWord.valueOf(storageExpandedKeySuffix);
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
-                @Override
-                public DataWord next() {
-                    if (currentStorageKey == null) {
-                        if (!hasNext()) {
-                            throw new NoSuchElementException();
-                        }
-                    }
-
-                    DataWord next = currentStorageKey;
-                    currentStorageKey = null;
-                    return next;
-                }
-            };
-        }
-        return Collections.emptyIterator();
+        return mutableTrie.getStorageKeys(accountStorageKey);
     }
 
     @Override

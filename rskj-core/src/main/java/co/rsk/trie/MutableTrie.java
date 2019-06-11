@@ -21,8 +21,10 @@ package co.rsk.trie;
 import co.rsk.core.types.ints.Uint24;
 import co.rsk.crypto.Keccak256;
 import org.ethereum.db.ByteArrayWrapper;
+import org.ethereum.vm.DataWord;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -70,4 +72,6 @@ public interface MutableTrie {
     // without the need to retrieve the value itself. Implementors can fallback to
     // getting the value and then returning its size.
     Uint24 getValueLength(byte[] key);
+
+    Iterator<DataWord> getStorageKeys(byte[] accountStorageKey);
 }
