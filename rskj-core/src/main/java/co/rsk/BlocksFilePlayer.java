@@ -49,7 +49,7 @@ public class BlocksFilePlayer {
             Stream<Block> blockStream = lines.skip(blocksToSkip).map(this::readBlock);
 
             int count = 0;
-            int max = 5000;
+            int max = 10000;
 
             Iterator<Block> blockIterator = blockStream.iterator();
             while (count < max && blockIterator.hasNext()){
@@ -81,9 +81,10 @@ public class BlocksFilePlayer {
 
     public static void main(String[] args) throws IOException {
 
-        args = new String[]{"-base-path","/home/julian/.rsk/database-snappy","/home/julian/workspace/rskj-projects/rskj-compression/fileExporter"};
+        args = new String[]{"-base-path","/home/julian/.rsk/database-xerial-manual","/home/julian/workspace/rskj-projects/rskj-compression/fileExporter"};
 
         if (args.length == 0) {
+
             System.out.println("usage: FileBlockPlayer [<node cli args>] <source file>");
             System.exit(0);
             return;
