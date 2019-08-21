@@ -88,6 +88,28 @@ public class TypeConverter {
     }
 
     /**
+     * Removes leading zeros from byte array.
+     * <p>
+     * 0x000AEF -> 0x2AEF
+     * <p>
+     * 0x00 -> 0x0
+     * @param x A hex string with or without leading zeroes ("0x00AEF")
+     * @return A hex string without leading zeroes ("0xAEF")
+     */
+    public static String toQuantityJsonHex(byte[] x) {
+        if (x.length == 0) {
+            throw new NumberFormatException("Empty byte cannot be converted to quantity.");
+        }
+
+        String withoutLeading = toJsonHex(x).replaceFirst("0x(0)+", "0x");
+        if (withoutLeading.equals("0x")) {
+            return "0x0";
+        }
+
+        return withoutLeading;
+    }
+
+    /**
      * Converts "0x876AF" to "876AF"
      */
     public static String removeZeroX(String str) {

@@ -69,7 +69,6 @@ import java.time.Duration;
 import java.util.*;
 
 import static java.lang.Math.max;
-import static org.ethereum.rpc.TypeConverter.*;
 
 public class Web3Impl implements Web3 {
     private static final Logger logger = LoggerFactory.getLogger("web3");
@@ -283,7 +282,7 @@ public class Web3Impl implements Web3 {
         try {
             s.startingBlock = TypeConverter.toJsonHex(initialBlockNumber);
             s.currentBlock = TypeConverter.toJsonHex(currentBlock);
-            s.highestBlock = toJsonHex(highestBlock);
+            s.highestBlock = TypeConverter.toJsonHex(highestBlock);
 
             return s;
         } finally {
@@ -295,7 +294,7 @@ public class Web3Impl implements Web3 {
     public String eth_coinbase() {
         String s = null;
         try {
-            return s = toJsonHex(minerServer.getCoinbaseAddress().getBytes());
+            return s = TypeConverter.toJsonHex(minerServer.getCoinbaseAddress().getBytes());
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_coinbase(): {}", s);
@@ -368,7 +367,7 @@ public class Web3Impl implements Web3 {
 
         logger.debug("eth_blockNumber(): {}", b);
 
-        return toJsonHex(b);
+        return TypeConverter.toJsonHex(b);
     }
 
     @Override
@@ -387,7 +386,7 @@ public class Web3Impl implements Web3 {
         RskAddress addr = new RskAddress(address);
         BigInteger balance = accountInformationProvider.getBalance(addr).asBigInteger();
 
-        return toJsonHex(balance);
+        return TypeConverter.toJsonHex(balance);
     }
 
     @Override
@@ -401,7 +400,7 @@ public class Web3Impl implements Web3 {
         RskAddress addr = new RskAddress(address);
         BigInteger balance = accountInformationProvider.getBalance(addr).asBigInteger();
 
-        return toJsonHex(balance);
+        return TypeConverter.toJsonHex(balance);
     }
 
     @Override
@@ -417,7 +416,7 @@ public class Web3Impl implements Web3 {
             }
 
             DataWord storageValue = accountInformationProvider.
-                    getStorageValue(addr, DataWord.valueOf(stringHexToByteArray(storageIdx)));
+                    getStorageValue(addr, DataWord.valueOf(TypeConverter.stringHexToByteArray(storageIdx)));
             if (storageValue != null) {
                 return s = TypeConverter.toJsonHex(storageValue.getData());
             } else {
@@ -452,7 +451,7 @@ public class Web3Impl implements Web3 {
     }
 
     public Block getBlockByJSonHash(String blockHash) throws Exception {
-        byte[] bhash = stringHexToByteArray(blockHash);
+        byte[] bhash = TypeConverter.stringHexToByteArray(blockHash);
         return this.blockchain.getBlockByHash(bhash);
     }
 
@@ -486,7 +485,7 @@ public class Web3Impl implements Web3 {
         } else if ("pending".equals(bnOrId)) {
             throw new JsonRpcUnimplementedMethodException("The method don't support 'pending' as a parameter yet");
         } else {
-            long bn = JSonHexToLong(bnOrId);
+            long bn = TypeConverter.JSonHexToLong(bnOrId);
             b = blockchain.getBlockByNumber(bn);
         }
 
@@ -518,7 +517,7 @@ public class Web3Impl implements Web3 {
         Block b = getBlockByJSonHash(blockHash);
         long n = b.getUncleList().size();
 
-        return toJsonHex(n);
+        return TypeConverter.toJsonHex(n);
     }
 
     @Override
@@ -526,7 +525,7 @@ public class Web3Impl implements Web3 {
         Block b = getBlockByNumberOrStr(bnOrId, blockchain);
         long n = b.getUncleList().size();
 
-        return toJsonHex(n);
+        return TypeConverter.toJsonHex(n);
     }
 
     @Override
@@ -594,11 +593,12 @@ public class Web3Impl implements Web3 {
         br.stateRoot = TypeConverter.toJsonHex(b.getStateRoot());
         br.receiptsRoot = TypeConverter.toJsonHex(b.getReceiptsRoot());
         br.miner = isPending ? null : TypeConverter.toJsonHex(b.getCoinbase().getBytes());
-        br.difficulty = TypeConverter.toJsonHex(b.getDifficulty().getBytes());
-        br.totalDifficulty = TypeConverter.toJsonHex(this.blockStore.getTotalDifficultyForHash(b.getHash().getBytes()).asBigInteger());
+        br.difficulty = TypeConverter.toQuantityJsonHex(b.getDifficulty().getBytes());
+        br.totalDifficulty = TypeConverter.toQuantityJsonHex(
+                this.blockStore.getTotalDifficultyForHash(b.getHash().getBytes()).getBytes());
         br.extraData = TypeConverter.toJsonHex(b.getExtraData());
         br.size = TypeConverter.toJsonHex(b.getEncoded().length);
-        br.gasLimit = TypeConverter.toJsonHex(b.getGasLimit());
+        br.gasLimit = TypeConverter.toQuantityJsonHex(b.getGasLimit());
         Coin mgp = b.getMinimumGasPrice();
         br.minimumGasPrice = mgp != null ? mgp.asBigInteger().toString() : "";
         br.gasUsed = TypeConverter.toJsonHex(b.getGasUsed());
@@ -621,7 +621,7 @@ public class Web3Impl implements Web3 {
         List<String> ul = new ArrayList<>();
 
         for (BlockHeader header : b.getUncleList()) {
-            ul.add(toJsonHex(header.getHash().getBytes()));
+            ul.add(TypeConverter.toJsonHex(header.getHash().getBytes()));
         }
 
         br.uncles = ul.toArray(new String[ul.size()]);
@@ -681,7 +681,7 @@ public class Web3Impl implements Web3 {
     public TransactionResultDTO eth_getTransactionByHash(String transactionHash) throws Exception {
         TransactionResultDTO s = null;
         try {
-            Keccak256 txHash = new Keccak256(stringHexToByteArray(transactionHash));
+            Keccak256 txHash = new Keccak256(TypeConverter.stringHexToByteArray(transactionHash));
             Block block = null;
 
             TransactionInfo txInfo = this.receiptStore.getInMainChain(txHash.getBytes(), blockStore);
@@ -771,7 +771,7 @@ public class Web3Impl implements Web3 {
     public TransactionReceiptDTO eth_getTransactionReceipt(String transactionHash) throws Exception {
         logger.trace("eth_getTransactionReceipt({})", transactionHash);
 
-        byte[] hash = stringHexToByteArray(transactionHash);
+        byte[] hash = TypeConverter.stringHexToByteArray(transactionHash);
         TransactionInfo txInfo = receiptStore.getInMainChain(hash, blockStore);
 
         if (txInfo == null) {
@@ -790,7 +790,7 @@ public class Web3Impl implements Web3 {
     public BlockResult eth_getUncleByBlockHashAndIndex(String blockHash, String uncleIdx) throws Exception {
         BlockResult s = null;
         try {
-            Block block = blockchain.getBlockByHash(stringHexToByteArray(blockHash));
+            Block block = blockchain.getBlockByHash(TypeConverter.stringHexToByteArray(blockHash));
 
             if (block == null) {
                 return null;
@@ -863,7 +863,7 @@ public class Web3Impl implements Web3 {
             Filter filter = LogFilter.fromFilterRequest(fr, blockchain, blocksBloomStore);
             int id = filterManager.registerFilter(filter);
 
-            return str = toJsonHex(id);
+            return str = TypeConverter.toJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newFilter({}): {}", fr, str);
@@ -877,7 +877,7 @@ public class Web3Impl implements Web3 {
         try {
             int id = filterManager.registerFilter(new NewBlockFilter());
 
-            return s = toJsonHex(id);
+            return s = TypeConverter.toJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newBlockFilter(): {}", s);
@@ -891,7 +891,7 @@ public class Web3Impl implements Web3 {
         try {
             int id = filterManager.registerFilter(new PendingTransactionFilter());
 
-            return s = toJsonHex(id);
+            return s = TypeConverter.toJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newPendingTransactionFilter(): {}", s);
@@ -908,7 +908,7 @@ public class Web3Impl implements Web3 {
                 return false;
             }
 
-            return filterManager.removeFilter(stringHexToBigInteger(id).intValue());
+            return filterManager.removeFilter(TypeConverter.stringHexToBigInteger(id).intValue());
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_uninstallFilter({}): {}", id, s);
@@ -958,7 +958,7 @@ public class Web3Impl implements Web3 {
     }
 
     private Object[] getFilterEvents(String id, boolean newevents) {
-        return this.filterManager.getFilterEvents(stringHexToBigInteger(id).intValue(), newevents);
+        return this.filterManager.getFilterEvents(TypeConverter.stringHexToBigInteger(id).intValue(), newevents);
     }
 
     @Override
@@ -1029,7 +1029,7 @@ public class Web3Impl implements Web3 {
             throw new JsonRpcUnimplementedMethodException("The method don't support 'pending' as a parameter yet");
         } else {
             try {
-                long blockNumber = stringHexToBigInteger(id).longValue();
+                long blockNumber = TypeConverter.stringHexToBigInteger(id).longValue();
                 return this.blockchain.getBlockByNumber(blockNumber);
             } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
                 throw new JsonRpcInvalidParamException("invalid blocknumber " + id);
