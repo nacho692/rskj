@@ -223,7 +223,7 @@ public class Web3Impl implements Web3 {
         String s = null;
         try {
             int n = channelManager.getActivePeers().size();
-            return s = TypeConverter.toJsonHex(n);
+            return s = TypeConverter.toQuantityJsonHex(n);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("net_peerCount(): {}", s);
@@ -280,9 +280,9 @@ public class Web3Impl implements Web3 {
 
         SyncingResult s = new SyncingResult();
         try {
-            s.startingBlock = TypeConverter.toJsonHex(initialBlockNumber);
-            s.currentBlock = TypeConverter.toJsonHex(currentBlock);
-            s.highestBlock = TypeConverter.toJsonHex(highestBlock);
+            s.startingBlock = TypeConverter.toQuantityJsonHex(initialBlockNumber);
+            s.currentBlock = TypeConverter.toQuantityJsonHex(currentBlock);
+            s.highestBlock = TypeConverter.toQuantityJsonHex(highestBlock);
 
             return s;
         } finally {
@@ -348,7 +348,7 @@ public class Web3Impl implements Web3 {
     public String eth_gasPrice() {
         String gasPrice = null;
         try {
-            return gasPrice = TypeConverter.toJsonHex(eth.getGasPrice().asBigInteger().longValue());
+            return gasPrice = TypeConverter.toQuantityJsonHex(eth.getGasPrice().asBigInteger().longValue());
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_gasPrice(): {}", gasPrice);
@@ -367,7 +367,7 @@ public class Web3Impl implements Web3 {
 
         logger.debug("eth_blockNumber(): {}", b);
 
-        return TypeConverter.toJsonHex(b);
+        return TypeConverter.toQuantityJsonHex(b);
     }
 
     @Override
@@ -386,7 +386,7 @@ public class Web3Impl implements Web3 {
         RskAddress addr = new RskAddress(address);
         BigInteger balance = accountInformationProvider.getBalance(addr).asBigInteger();
 
-        return TypeConverter.toJsonHex(balance);
+        return TypeConverter.toQuantityJsonHex(balance);
     }
 
     @Override
@@ -400,7 +400,7 @@ public class Web3Impl implements Web3 {
         RskAddress addr = new RskAddress(address);
         BigInteger balance = accountInformationProvider.getBalance(addr).asBigInteger();
 
-        return TypeConverter.toJsonHex(balance);
+        return TypeConverter.toQuantityJsonHex(balance);
     }
 
     @Override
@@ -439,7 +439,7 @@ public class Web3Impl implements Web3 {
 
             if (accountInformationProvider != null) {
                 BigInteger nonce = accountInformationProvider.getNonce(addr);
-                return s = TypeConverter.toJsonHex(nonce);
+                return s = TypeConverter.toQuantityJsonHex(nonce);
             } else {
                 return null;
             }
@@ -467,7 +467,7 @@ public class Web3Impl implements Web3 {
 
             long n = b.getTransactionsList().size();
 
-            return s = TypeConverter.toJsonHex(n);
+            return s = TypeConverter.toQuantityJsonHex(n);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_getBlockTransactionCountByHash({}): {}", blockHash, s);
@@ -504,7 +504,7 @@ public class Web3Impl implements Web3 {
 
             long n = list.size();
 
-            return s = TypeConverter.toJsonHex(n);
+            return s = TypeConverter.toQuantityJsonHex(n);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_getBlockTransactionCountByNumber({}): {}", bnOrId, s);
@@ -517,7 +517,7 @@ public class Web3Impl implements Web3 {
         Block b = getBlockByJSonHash(blockHash);
         long n = b.getUncleList().size();
 
-        return TypeConverter.toJsonHex(n);
+        return TypeConverter.toQuantityJsonHex(n);
     }
 
     @Override
@@ -525,7 +525,7 @@ public class Web3Impl implements Web3 {
         Block b = getBlockByNumberOrStr(bnOrId, blockchain);
         long n = b.getUncleList().size();
 
-        return TypeConverter.toJsonHex(n);
+        return TypeConverter.toQuantityJsonHex(n);
     }
 
     @Override
@@ -568,7 +568,7 @@ public class Web3Impl implements Web3 {
     public BlockInformationResult getBlockInformationResult(BlockInformation blockInformation) {
         BlockInformationResult bir = new BlockInformationResult();
         bir.hash = TypeConverter.toJsonHex(blockInformation.getHash());
-        bir.totalDifficulty = TypeConverter.toJsonHex(blockInformation.getTotalDifficulty().asBigInteger());
+        bir.totalDifficulty = TypeConverter.toQuantityJsonHex(blockInformation.getTotalDifficulty().asBigInteger());
         bir.inMainChain = blockInformation.isInMainChain();
 
         return bir;
@@ -584,7 +584,7 @@ public class Web3Impl implements Web3 {
         boolean isPending = (mergeHeader == null || mergeHeader.length == 0) && !b.isGenesis();
 
         BlockResult br = new BlockResult();
-        br.number = isPending ? null : TypeConverter.toJsonHex(b.getNumber());
+        br.number = isPending ? null : TypeConverter.toQuantityJsonHex(b.getNumber());
         br.hash = isPending ? null : b.getHashJsonString();
         br.parentHash = b.getParentHashJsonString();
         br.sha3Uncles = TypeConverter.toUnformattedJsonHex(b.getUnclesHash());
@@ -597,12 +597,12 @@ public class Web3Impl implements Web3 {
         br.totalDifficulty = TypeConverter.toQuantityJsonHex(
                 this.blockStore.getTotalDifficultyForHash(b.getHash().getBytes()).getBytes());
         br.extraData = TypeConverter.toUnformattedJsonHex(b.getExtraData());
-        br.size = TypeConverter.toJsonHex(b.getEncoded().length);
+        br.size = TypeConverter.toQuantityJsonHex(b.getEncoded().length);
         br.gasLimit = TypeConverter.toQuantityJsonHex(b.getGasLimit());
         Coin mgp = b.getMinimumGasPrice();
         br.minimumGasPrice = mgp != null ? mgp.asBigInteger().toString() : "";
-        br.gasUsed = TypeConverter.toJsonHex(b.getGasUsed());
-        br.timestamp = TypeConverter.toJsonHex(b.getTimestamp());
+        br.gasUsed = TypeConverter.toQuantityJsonHex(b.getGasUsed());
+        br.timestamp = TypeConverter.toQuantityJsonHex(b.getTimestamp());
 
         List<Object> txes = new ArrayList<>();
 
@@ -863,7 +863,7 @@ public class Web3Impl implements Web3 {
             Filter filter = LogFilter.fromFilterRequest(fr, blockchain, blocksBloomStore);
             int id = filterManager.registerFilter(filter);
 
-            return str = TypeConverter.toJsonHex(id);
+            return str = TypeConverter.toQuantityJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newFilter({}): {}", fr, str);
@@ -877,7 +877,7 @@ public class Web3Impl implements Web3 {
         try {
             int id = filterManager.registerFilter(new NewBlockFilter());
 
-            return s = TypeConverter.toJsonHex(id);
+            return s = TypeConverter.toQuantityJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newBlockFilter(): {}", s);
@@ -891,7 +891,7 @@ public class Web3Impl implements Web3 {
         try {
             int id = filterManager.registerFilter(new PendingTransactionFilter());
 
-            return s = TypeConverter.toJsonHex(id);
+            return s = TypeConverter.toQuantityJsonHex(id);
         } finally {
             if (logger.isDebugEnabled()) {
                 logger.debug("eth_newPendingTransactionFilter(): {}", s);

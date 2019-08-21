@@ -23,6 +23,7 @@ import co.rsk.mine.MinerClient;
 import co.rsk.mine.MinerClock;
 import co.rsk.mine.MinerManager;
 import co.rsk.mine.MinerServer;
+import org.ethereum.rpc.TypeConverter;
 import org.ethereum.rpc.exception.JsonRpcInvalidParamException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class EvmModuleImpl implements EvmModule {
     public String evm_snapshot() {
         int snapshotId = snapshotManager.takeSnapshot();
         logger.debug("evm_snapshot(): {}", snapshotId);
-        return toJsonHex(snapshotId);
+        return TypeConverter.toQuantityJsonHex(snapshotId);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class EvmModuleImpl implements EvmModule {
     public String evm_increaseTime(String seconds) {
         try {
             long nseconds = stringNumberAsBigInt(seconds).longValue();
-            String result = toJsonHex(minerClock.increaseTime(nseconds));
+            String result = TypeConverter.toQuantityJsonHex(minerClock.increaseTime(nseconds));
             logger.debug("evm_increaseTime({}): {}", nseconds, result);
             return result;
         } catch (NumberFormatException | StringIndexOutOfBoundsException e) {

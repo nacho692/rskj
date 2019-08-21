@@ -84,14 +84,14 @@ public class TypeConverter {
     /**
      * @return A Hex representation of n WITHOUT leading zeroes
      */
-    public static String toJsonHex(long n) {
+    public static String toQuantityJsonHex(long n) {
         return "0x" + Long.toHexString(n);
     }
 
     /**
      * @return A Hex representation of n WITHOUT leading zeroes
      */
-    public static String toJsonHex(BigInteger n) {
+    public static String toQuantityJsonHex(BigInteger n) {
         return "0x"+ n.toString(16);
     }
 
