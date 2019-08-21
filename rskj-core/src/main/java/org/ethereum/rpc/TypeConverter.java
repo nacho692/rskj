@@ -65,6 +65,7 @@ public class TypeConverter {
         return input.getBytes(StandardCharsets.UTF_8);
     }
 
+
     public static String toJsonHex(byte[] x) {
         String result = "0x" + Hex.toHexString(x == null ? ByteUtil.EMPTY_BYTE_ARRAY : x);
 
@@ -79,20 +80,40 @@ public class TypeConverter {
         return "0x"+x;
     }
 
+
+    /**
+     * @return A Hex representation of n WITHOUT leading zeroes
+     */
     public static String toJsonHex(long n) {
         return "0x" + Long.toHexString(n);
     }
 
+    /**
+     * @return A Hex representation of n WITHOUT leading zeroes
+     */
     public static String toJsonHex(BigInteger n) {
         return "0x"+ n.toString(16);
     }
 
     /**
-     * Removes leading zeros from byte array.
+     * Converts a byte array to a string according to ethereum json-rpc specifications, null and empty
+     * convert to 0x.
+     *
+     * @param x An unformatted byte array
+     * @return A hex representation of the input with two hex digits per byte
+     */
+    public static String toUnformattedJsonHex(byte[] x) {
+        return "0x" + Hex.toHexString(x == null ? ByteUtil.EMPTY_BYTE_ARRAY : x);
+    }
+
+    /**
+     * Converts a byte array representing a quantity according to ethereum json-rpc specifications.
+     *
      * <p>
      * 0x000AEF -> 0x2AEF
      * <p>
      * 0x00 -> 0x0
+     *
      * @param x A hex string with or without leading zeroes ("0x00AEF")
      * @return A hex string without leading zeroes ("0xAEF")
      */
@@ -102,7 +123,7 @@ public class TypeConverter {
         }
 
         String withoutLeading = toJsonHex(x).replaceFirst("0x(0)+", "0x");
-        if (withoutLeading.equals("0x")) {
+        if ("0x".equals(withoutLeading)) {
             return "0x0";
         }
 

@@ -60,27 +60,27 @@ public class TransactionResultDTO {
             nonce = TypeConverter.toJsonHex(tx.getNonce());
         }
 
-        blockHash = b != null ? b.getHashJsonString() : null;
+        blockHash = b != null ? b.getHash().toJsonString() : null;
         blockNumber = b != null ? TypeConverter.toJsonHex(b.getNumber()) : null;
         transactionIndex = index != null ? TypeConverter.toJsonHex(index) : null;
-        from = addressToJsonHex(tx.getSender());
+        from = TypeConverter.toUnformattedJsonHex(tx.getSender().getBytes());
         to = addressToJsonHex(tx.getReceiveAddress());
         gas = TypeConverter.toQuantityJsonHex(tx.getGasLimit()); // Todo: unclear if it's the gas limit or gas consumed what is asked
 
         gasPrice = TypeConverter.toQuantityJsonHex(tx.getGasPrice().getBytes());
 
         if (Coin.ZERO.equals(tx.getValue())) {
-            value = "0";
+            value = "0x0";
         } else {
-            value = TypeConverter.toJsonHex(tx.getValue().getBytes());
+            value = TypeConverter.toQuantityJsonHex(tx.getValue().getBytes());
         }
 
-        input = TypeConverter.toJsonHex(tx.getData());
+        input = TypeConverter.toUnformattedJsonHex(tx.getData());
 
         if (tx instanceof RemascTransaction) {
             // Web3.js requires the address to be valid (20 bytes),
             // so we have to serialize the Remasc sender as a valid address.
-            from = TypeConverter.toJsonHex(new byte[20]);
+            from = TypeConverter.toUnformattedJsonHex(new byte[20]);
         } else {
             ECKey.ECDSASignature signature = tx.getSignature();
             v = String.format("0x%02x", signature.v);
@@ -93,6 +93,6 @@ public class TransactionResultDTO {
         if (RskAddress.nullAddress().equals(address)) {
             return null;
         }
-        return TypeConverter.toJsonHex(address.getBytes());
+        return TypeConverter.toUnformattedJsonHex(address.getBytes());
     }
 }

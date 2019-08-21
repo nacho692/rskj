@@ -587,16 +587,16 @@ public class Web3Impl implements Web3 {
         br.number = isPending ? null : TypeConverter.toJsonHex(b.getNumber());
         br.hash = isPending ? null : b.getHashJsonString();
         br.parentHash = b.getParentHashJsonString();
-        br.sha3Uncles= TypeConverter.toJsonHex(b.getUnclesHash());
-        br.logsBloom = isPending ? null : TypeConverter.toJsonHex(b.getLogBloom());
-        br.transactionsRoot = TypeConverter.toJsonHex(b.getTxTrieRoot());
-        br.stateRoot = TypeConverter.toJsonHex(b.getStateRoot());
-        br.receiptsRoot = TypeConverter.toJsonHex(b.getReceiptsRoot());
-        br.miner = isPending ? null : TypeConverter.toJsonHex(b.getCoinbase().getBytes());
+        br.sha3Uncles = TypeConverter.toUnformattedJsonHex(b.getUnclesHash());
+        br.logsBloom = isPending ? null : TypeConverter.toUnformattedJsonHex(b.getLogBloom());
+        br.transactionsRoot = TypeConverter.toUnformattedJsonHex(b.getTxTrieRoot());
+        br.stateRoot = TypeConverter.toUnformattedJsonHex(b.getStateRoot());
+        br.receiptsRoot = TypeConverter.toUnformattedJsonHex(b.getReceiptsRoot());
+        br.miner = isPending ? null : TypeConverter.toUnformattedJsonHex(b.getCoinbase().getBytes());
         br.difficulty = TypeConverter.toQuantityJsonHex(b.getDifficulty().getBytes());
         br.totalDifficulty = TypeConverter.toQuantityJsonHex(
                 this.blockStore.getTotalDifficultyForHash(b.getHash().getBytes()).getBytes());
-        br.extraData = TypeConverter.toJsonHex(b.getExtraData());
+        br.extraData = TypeConverter.toUnformattedJsonHex(b.getExtraData());
         br.size = TypeConverter.toJsonHex(b.getEncoded().length);
         br.gasLimit = TypeConverter.toQuantityJsonHex(b.getGasLimit());
         Coin mgp = b.getMinimumGasPrice();
@@ -621,7 +621,7 @@ public class Web3Impl implements Web3 {
         List<String> ul = new ArrayList<>();
 
         for (BlockHeader header : b.getUncleList()) {
-            ul.add(TypeConverter.toJsonHex(header.getHash().getBytes()));
+            ul.add(header.getHash().toJsonString());
         }
 
         br.uncles = ul.toArray(new String[ul.size()]);

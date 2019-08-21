@@ -59,6 +59,26 @@ public class TypeConverterTest {
     }
 
     @Test
+    public void toUnformattedJsonHex() {
+        Assert.assertEquals("0x20", TypeConverter.toUnformattedJsonHex(new byte[] { 0x20 }));
+    }
+
+    @Test
+    public void toUnformattedJsonHex_nullArray() {
+        Assert.assertEquals("0x", TypeConverter.toUnformattedJsonHex(null));
+    }
+
+    @Test
+    public void toUnformattedJsonHex_empty() {
+        Assert.assertEquals("0x", TypeConverter.toUnformattedJsonHex(new byte[0]));
+    }
+
+    @Test
+    public void toUnformattedJsonHex_twoHex() {
+        Assert.assertEquals("0x02", TypeConverter.toUnformattedJsonHex(new byte[] {0x2}));
+    }
+
+    @Test
     public void toQuantityJsonHex() {
         byte[] toEncode = new byte[]{0x0A};
         Assert.assertEquals("0xa", TypeConverter.toQuantityJsonHex(toEncode));

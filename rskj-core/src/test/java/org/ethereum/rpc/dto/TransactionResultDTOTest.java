@@ -18,6 +18,7 @@
 
 package org.ethereum.rpc.dto;
 
+import co.rsk.crypto.Keccak256;
 import co.rsk.remasc.RemascTransaction;
 import org.ethereum.core.Block;
 import org.junit.Test;
@@ -28,13 +29,17 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TransactionResultDTOTest {
     @Test
     public void remascAddressSerialization() {
         RemascTransaction remascTransaction = new RemascTransaction(new Random().nextLong());
+        Block block = mock(Block.class);
+        Keccak256 blockHash = mock(Keccak256.class);
+        when(block.getHash()).thenReturn(blockHash);
 
-        TransactionResultDTO dto = new TransactionResultDTO(mock(Block.class), 42, remascTransaction);
+        TransactionResultDTO dto = new TransactionResultDTO(block, 42, remascTransaction);
         assertThat(dto.from, is("0x0000000000000000000000000000000000000000"));
         assertThat(dto.r, is(nullValue()));
         assertThat(dto.s, is(nullValue()));
