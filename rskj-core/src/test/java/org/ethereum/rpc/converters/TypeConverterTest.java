@@ -89,9 +89,4 @@ public class TypeConverterTest {
         byte[] toEncode = new byte[]{0x00, 0x00};
         Assert.assertEquals("0x0", TypeConverter.toQuantityJsonHex(toEncode));
     }
-
-    @Test(expected = NumberFormatException.class)
-    public void toQuantityJsonHex_InvalidArray() {
-        TypeConverter.toQuantityJsonHex(new byte[0]);
-    }
 }
