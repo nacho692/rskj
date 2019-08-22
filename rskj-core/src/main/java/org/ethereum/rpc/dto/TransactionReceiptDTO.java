@@ -50,7 +50,7 @@ public class TransactionReceiptDTO {
 
         TransactionReceipt receipt = txInfo.getReceipt();
 
-        status = toQuantityJsonHex(txInfo.getReceipt().getStatus());
+        status = toJsonHex(txInfo.getReceipt().getStatus());
         blockHash = toUnformattedJsonHex(txInfo.getBlockHash());
         blockNumber = toQuantityJsonHex(block.getNumber());
 
