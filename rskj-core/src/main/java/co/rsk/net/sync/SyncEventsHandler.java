@@ -34,4 +34,8 @@ public interface SyncEventsHandler {
     void onSyncIssue(String message, Object... arguments);
 
     void startFindingConnectionPoint(NodeID peerId);
+
+    void backwardSyncing(NodeID peerId);
+
+    void backwardDownloadBodies(NodeID selectedPeerId, List<BlockHeader> toRequest);
 }

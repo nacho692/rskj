@@ -4,6 +4,7 @@ import co.rsk.net.NodeID;
 import co.rsk.scoring.PeerScoringManager;
 import org.ethereum.core.Blockchain;
 import org.ethereum.crypto.HashUtil;
+import org.ethereum.db.BlockStore;
 import org.ethereum.util.RskMockFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class DecidingSyncStateTest {
         PeersInformation peersInformation = mock(PeersInformation.class);
         when(peersInformation.count()).thenReturn(1,2,3,4,5);
 
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, peersInformation);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, peersInformation, mock(BlockStore.class));
         when(peersInformation.getBestPeer()).thenReturn(Optional.of(mock(NodeID.class)));
 
         for (int i = 0; i < 5; i++) {
@@ -45,7 +46,7 @@ public class DecidingSyncStateTest {
         when(knownPeers.count()).thenReturn(0);
         when(knownPeers.getBestPeer()).thenReturn(Optional.empty());
 
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers, mock(BlockStore.class));
 
         syncState.tick(Duration.ofMinutes(2));
         Assert.assertFalse(syncEventsHandler.startSyncingWasCalled());
@@ -60,7 +61,7 @@ public class DecidingSyncStateTest {
         when(knownPeers.count()).thenReturn(1);
         when(knownPeers.getBestPeer()).thenReturn(Optional.of(mock(NodeID.class)));
 
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers, mock(BlockStore.class));
         Assert.assertFalse(syncEventsHandler.startSyncingWasCalled());
 
         syncState.newPeerStatus();
@@ -78,7 +79,7 @@ public class DecidingSyncStateTest {
 
         PeersInformation knownPeers = new PeersInformation(RskMockFactory.getChannelManager(),
                 syncConfiguration, blockchain, peerScoringManager);
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers, mock(BlockStore.class));
         Assert.assertFalse(syncEventsHandler.startSyncingWasCalled());
 
         knownPeers.registerPeer(new NodeID(HashUtil.randomPeerId()));
@@ -97,7 +98,7 @@ public class DecidingSyncStateTest {
 
         PeersInformation knownPeers = new PeersInformation(RskMockFactory.getChannelManager(),
                 syncConfiguration, blockchain, peerScoringManager);
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers, mock(BlockStore.class));
         Assert.assertFalse(syncEventsHandler.startSyncingWasCalled());
 
         knownPeers.registerPeer(new NodeID(HashUtil.randomPeerId()));
@@ -116,7 +117,7 @@ public class DecidingSyncStateTest {
 
         PeersInformation knownPeers = new PeersInformation(RskMockFactory.getChannelManager(),
                 syncConfiguration, blockchain, peerScoringManager);
-        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers);
+        SyncState syncState = new DecidingSyncState(syncConfiguration, syncEventsHandler, knownPeers, mock(BlockStore.class));
         Assert.assertFalse(syncEventsHandler.startSyncingWasCalled());
 
         knownPeers.registerPeer(new NodeID(HashUtil.randomPeerId()));

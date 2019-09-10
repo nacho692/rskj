@@ -24,6 +24,11 @@ public class SimpleSyncEventsHandler implements SyncEventsHandler {
     }
 
     @Override
+    public void backwardSyncing(NodeID peerId) {
+
+    }
+
+    @Override
     public Long sendBodyRequest(@Nonnull BlockHeader header, NodeID peerId) { return 0L; }
 
     @Override

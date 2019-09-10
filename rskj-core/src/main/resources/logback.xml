@@ -16,11 +16,11 @@
             <pattern>%date{yyyy-MM-dd-HH:mm:ss.SSSS} %p [%c{1}]  %m%n</pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>OFF</level>
+            <level>ALL</level>
         </filter>
     </appender>
 
-    <appender name="FILE-AUDIT"
+    <!--<appender name="FILE-AUDIT"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>./logs/rsk.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -34,7 +34,7 @@
         <maxHistory>7</maxHistory>
         <totalSizeCap>1GB</totalSizeCap>
     </rollingPolicy>
-    </appender>
+    </appender>-->
 
     <logger name="execute" level="INFO"/>
     <logger name="blockvalidator" level="INFO"/>
