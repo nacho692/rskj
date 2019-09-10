@@ -78,7 +78,7 @@ public class SyncProcessor implements SyncEventsHandler {
         };
 
         this.peersInformation = peersInformation;
-        setSyncState(new DecidingSyncState(syncConfiguration, this, peersInformation));
+        setSyncState(new DecidingSyncState(syncConfiguration, this, peersInformation, blockStore));
     }
 
     public void processStatus(MessageChannel sender, Status status) {
@@ -272,6 +272,30 @@ public class SyncProcessor implements SyncEventsHandler {
     }
 
     @Override
+    public void backwardSyncing(NodeID peerId) {
+        logger.debug("Starting backwards synchronization with node {}", peerId);
+        setSyncState(new DownloadingBackwardsHeadersSyncState(
+                syncConfiguration,
+                this,
+                blockStore,
+                peerId
+        ));
+    }
+
+    @Override
+    public void backwardDownloadBodies(NodeID peerId, List<BlockHeader> toRequest) {
+        logger.debug("Starting backwards body download with node {}", peerId);
+        setSyncState(new DownloadingBackwardsBodiesSyncState(
+                syncConfiguration,
+                this,
+                blockFactory,
+                blockStore,
+                toRequest,
+                peerId
+        ));
+    }
+
+    @Override
     public void stopSyncing() {
         int pendingMessagesCount = pendingMessages.size();
         pendingMessages.clear();
@@ -279,7 +303,10 @@ public class SyncProcessor implements SyncEventsHandler {
         // always that a syncing process ends unexpectedly the best block number is reset
         blockSyncService.setLastKnownBlockNumber(blockchain.getBestBlock().getNumber());
         peersInformation.clearOldFailedPeers();
-        setSyncState(new DecidingSyncState(syncConfiguration, this, peersInformation));
+        setSyncState(new DecidingSyncState(syncConfiguration,
+                this,
+                peersInformation,
+                blockStore));
     }
 
     @Override
