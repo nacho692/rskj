@@ -73,9 +73,6 @@ public class MultiTrieStore implements TrieStore {
 
     /**
      * This method will go through all epochs from newest to oldest retrieving the <code>rootHash</code>
-     *
-     * @param rootHash the root of the {@link Trie} to retrieve
-     * @return an optional containing the {@link Trie} with <code>rootHash</code> if found
      */
     @Override
     public Optional<Trie> retrieve(byte[] rootHash) {

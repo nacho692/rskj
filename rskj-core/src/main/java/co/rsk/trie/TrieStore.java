@@ -25,7 +25,10 @@ public interface TrieStore {
 
     void flush();
 
-    /** Retrieve a trie node with the specified hash from this store */
+    /**
+     * @param hash the root of the {@link Trie} to retrieve
+     * @return an optional containing the {@link Trie} with <code>rootHash</code> if found
+     */
     Optional<Trie> retrieve(byte[] hash);
 
     byte[] retrieveValue(byte[] hash);
