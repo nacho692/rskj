@@ -22,6 +22,7 @@ import co.rsk.config.TestSystemProperties;
 import co.rsk.db.RepositoryLocator;
 import co.rsk.rpc.modules.personal.PersonalModule;
 import co.rsk.rpc.modules.personal.PersonalModuleWalletDisabled;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import org.ethereum.core.Blockchain;
 import org.ethereum.core.TransactionPool;
 import org.ethereum.facade.Ethereum;
@@ -31,6 +32,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by ajlopez on 20/04/2017.
@@ -48,8 +51,8 @@ public class Web3ImplRpcTest {
                             null, null, null, null,
                             null, null, null, repositoryLocator, null,
                             null, null, null, null, null,
-                            null, null, null, null
-        );
+                            null, null, null, null,
+                mock(RetrieverFactory.class));
 
         Map<String, String> result = web3.rpc_modules();
 

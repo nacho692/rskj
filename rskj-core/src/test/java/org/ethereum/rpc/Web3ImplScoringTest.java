@@ -36,6 +36,7 @@ import co.rsk.rpc.modules.personal.PersonalModule;
 import co.rsk.rpc.modules.personal.PersonalModuleWalletEnabled;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
 import co.rsk.rpc.modules.txpool.TxPoolModuleImpl;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.scoring.*;
 import co.rsk.test.World;
 import org.bouncycastle.util.encoders.Hex;
@@ -48,6 +49,8 @@ import org.junit.Test;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by ajlopez on 12/07/2017.
@@ -396,8 +399,8 @@ public class Web3ImplScoringTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
     }
 
     private static NodeID generateNodeID() {

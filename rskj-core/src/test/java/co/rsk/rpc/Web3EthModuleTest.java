@@ -33,6 +33,7 @@ import co.rsk.rpc.modules.mnr.MnrModule;
 import co.rsk.rpc.modules.personal.PersonalModule;
 import co.rsk.rpc.modules.rsk.RskModule;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.scoring.PeerScoringManager;
 import org.ethereum.core.Blockchain;
 import org.ethereum.core.TransactionPool;
@@ -80,8 +81,8 @@ public class Web3EthModuleTest {
                 mock(HashRateCalculator.class),
                 mock(ConfigCapabilities.class),
                 mock(BuildInfo.class),
-                mock(BlocksBloomStore.class)
-        );
+                mock(BlocksBloomStore.class),
+                mock(RetrieverFactory.class));
 
         assertThat(web3.eth_chainId(), is("0x21"));
     }

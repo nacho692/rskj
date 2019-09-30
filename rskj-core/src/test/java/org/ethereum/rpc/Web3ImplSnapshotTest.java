@@ -36,6 +36,7 @@ import co.rsk.rpc.modules.personal.PersonalModule;
 import co.rsk.rpc.modules.personal.PersonalModuleWalletDisabled;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
 import co.rsk.rpc.modules.txpool.TxPoolModuleImpl;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.validators.BlockValidationRule;
 import co.rsk.validators.ProofOfWorkRule;
 import org.ethereum.core.Block;
@@ -49,6 +50,8 @@ import org.junit.Test;
 
 import java.time.Clock;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Created by ajlopez on 15/04/2017.
@@ -177,7 +180,6 @@ public class Web3ImplSnapshotTest {
         return new Web3Impl(
                 ethereum,
                 blockchain,
-                factory.getTransactionPool(),
                 factory.getBlockStore(),
                 factory.getReceiptStore(),
                 Web3Mocks.getMockProperties(),
@@ -191,15 +193,14 @@ public class Web3ImplSnapshotTest {
                 dm,
                 null,
                 Web3Mocks.getMockChannelManager(),
-                factory.getRepositoryLocator(),
                 null,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
     }
 
     private Web3Impl createWeb3() {

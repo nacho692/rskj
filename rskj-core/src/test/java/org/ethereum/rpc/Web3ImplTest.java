@@ -44,6 +44,7 @@ import co.rsk.rpc.modules.rsk.RskModule;
 import co.rsk.rpc.modules.rsk.RskModuleImpl;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
 import co.rsk.rpc.modules.txpool.TxPoolModuleImpl;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.test.World;
 import co.rsk.test.builders.AccountBuilder;
 import co.rsk.test.builders.BlockBuilder;
@@ -262,7 +263,6 @@ public class Web3ImplTest {
         Web3 web3 = new Web3Impl(
                 ethMock,
                 blockchain,
-                transactionPool,
                 blockStore,
                 null,
                 mockProperties,
@@ -276,15 +276,14 @@ public class Web3ImplTest {
                 debugModule,
                 null,
                 Web3Mocks.getMockChannelManager(),
-                Web3Mocks.getMockRepositoryLocator(),
                 null,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
 
         assertTrue("Node is not mining", !web3.eth_mining());
         try {
@@ -675,13 +674,13 @@ public class Web3ImplTest {
 
         assertNotNull(bresult);
 
-        org.junit.Assert.assertEquals(2, bresult.length);
-        org.junit.Assert.assertEquals(hashBlock1String, bresult[0].hash);
-        org.junit.Assert.assertEquals(hashBlock1bString, bresult[1].hash);
+        assertEquals(2, bresult.length);
+        assertEquals(hashBlock1String, bresult[0].hash);
+        assertEquals(hashBlock1bString, bresult[1].hash);
     }
 
     @Test
-    public void getBlockByNumberRetrieveLatestBlock() throws Exception {
+    public void getBlockByNumberRetrieveLatestBlock() {
         World world = new World();
 
         Web3Impl web3 = createWeb3(world);
@@ -691,13 +690,13 @@ public class Web3ImplTest {
         Block block1 = new BlockBuilder(world.getBlockChain(), world.getBridgeSupportFactory(),
                                         world.getBlockStore()).trieStore(world.getTrieStore()).parent(genesis).build();
         block1.setBitcoinMergedMiningHeader(new byte[] { 0x01 });
-        org.junit.Assert.assertEquals(ImportResult.IMPORTED_BEST, world.getBlockChain().tryToConnect(block1));
+        assertEquals(ImportResult.IMPORTED_BEST, world.getBlockChain().tryToConnect(block1));
 
         BlockResultDTO blockResult = web3.eth_getBlockByNumber("latest", false);
 
         assertNotNull(blockResult);
         String blockHash = TypeConverter.toJsonHex(block1.getHash().toString());
-        org.junit.Assert.assertEquals(blockHash, blockResult.getHash());
+        assertEquals(blockHash, blockResult.getHash());
     }
 
     @Test
@@ -1015,7 +1014,6 @@ public class Web3ImplTest {
         Web3 web3 = new Web3Impl(
                 ethMock,
                 blockchain,
-                transactionPool,
                 blockStore,
                 null,
                 mockProperties,
@@ -1029,15 +1027,14 @@ public class Web3ImplTest {
                 null,
                 null,
                 Web3Mocks.getMockChannelManager(),
-                Web3Mocks.getMockRepositoryLocator(),
                 null,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
 
         Assert.assertEquals("0x" + originalCoinbase, web3.eth_coinbase());
         verify(minerServerMock, times(1)).getCoinbaseAddress();
@@ -1362,8 +1359,11 @@ public class Web3ImplTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                new RetrieverFactory(
+                        transactionPool,
+                        blockchain,
+                        mock(RepositoryLocator.class)));
     }
 
     private Web3Impl createWeb3(Ethereum eth, World world, ReceiptStore receiptStore) {
@@ -1449,8 +1449,8 @@ public class Web3ImplTest {
                 null,
                 configCapabilities,
                 new BuildInfo("test", "test"),
-                null
-        );
+                null,
+                new RetrieverFactory(transactionPool, blockchain, repositoryLocator));
     }
 
     @Test
@@ -1498,8 +1498,8 @@ public class Web3ImplTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
         String contract = "pragma solidity ^0.4.1; contract rsk { function multiply(uint a) returns(uint d) {   return a * 7;   } }";
 
         Map<String, CompilationResultDTO> result = web3.eth_compileSolidity(contract);
@@ -1560,8 +1560,8 @@ public class Web3ImplTest {
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                mock(RetrieverFactory.class));
 
         String contract = "pragma solidity ^0.4.1; contract rsk { function multiply(uint a) returns(uint d) {   return a * 7;   } }";
 

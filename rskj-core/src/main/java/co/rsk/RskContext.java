@@ -65,6 +65,7 @@ import co.rsk.rpc.modules.rsk.RskModuleImpl;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
 import co.rsk.rpc.modules.txpool.TxPoolModuleImpl;
 import co.rsk.rpc.netty.*;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.scoring.PeerScoring;
 import co.rsk.scoring.PeerScoringManager;
 import co.rsk.scoring.PunishmentParameters;
@@ -223,6 +224,7 @@ public class RskContext implements NodeBootstrapper {
     private BridgeSupportFactory bridgeSupportFactory;
     private PeersInformation peersInformation;
     private StatusResolver statusResolver;
+    private RetrieverFactory retrieverFactory;
 
     public RskContext(String[] args) {
         this(new CliArgs.Parser<>(
@@ -802,8 +804,15 @@ public class RskContext implements NodeBootstrapper {
                 getHashRateCalculator(),
                 getConfigCapabilities(),
                 getBuildInfo(),
-                getBlocksBloomStore()
-        );
+                getBlocksBloomStore(),
+                getRetrieverFactory());
+    }
+
+    private RetrieverFactory getRetrieverFactory() {
+        if (retrieverFactory == null) {
+            retrieverFactory = new RetrieverFactory(getTransactionPool(), getBlockchain(), getRepositoryLocator());
+        }
+        return retrieverFactory;
     }
 
     protected ReceiptStore buildReceiptStore() {

@@ -49,4 +49,8 @@ public class RskJsonRpcRequestException extends RuntimeException {
     public static RskJsonRpcRequestException blockNotFound(String message) {
         return new RskJsonRpcRequestException(-32600, message);
     }
+
+    public static RskJsonRpcRequestException stateNotFound(String message) {
+        return new RskJsonRpcRequestException(-32600, message);
+    }
 }

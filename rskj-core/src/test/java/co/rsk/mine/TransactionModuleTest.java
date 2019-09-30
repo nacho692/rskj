@@ -36,6 +36,7 @@ import co.rsk.rpc.modules.eth.*;
 import co.rsk.rpc.modules.personal.PersonalModuleWalletEnabled;
 import co.rsk.rpc.modules.txpool.TxPoolModule;
 import co.rsk.rpc.modules.txpool.TxPoolModuleImpl;
+import co.rsk.rpc.retriever.RetrieverFactory;
 import co.rsk.test.World;
 import co.rsk.test.builders.AccountBuilder;
 import co.rsk.test.builders.TransactionBuilder;
@@ -404,8 +405,8 @@ public class TransactionModuleTest {
                 null,
                 configCapabilities,
                 null,
-                null
-        );
+                null,
+                Mockito.mock(RetrieverFactory.class));
     }
 
     private TransactionExecutorFactory buildTransactionExecutorFactory(BlockStore blockStore, ReceiptStore receiptStore) {

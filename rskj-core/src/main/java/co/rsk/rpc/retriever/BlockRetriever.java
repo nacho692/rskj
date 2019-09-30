@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static org.ethereum.rpc.exception.RskJsonRpcRequestException.stateNotFound;
+
 public class BlockRetriever implements BlockInformationRetriever {
 
     private final Block block;
